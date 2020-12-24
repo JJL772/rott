@@ -17,7 +17,7 @@ else
 	CFLAGS+=-Wno-int-to-pointer-cast
 endif 
 
-LIBS+=$(shell pkgconf sdl --libs) -LSDL_mixer
+LIBS+=$(shell pkgconf sdl --libs) -lSDL_mixer
 CFLAGS+=$(DEFINES) -Werror -Wno-discarded-qualifiers
 
 SRCS = \
@@ -93,6 +93,14 @@ clean:
 	rm -rf build
 	rm -rf bin
 
+install: all
+	@if [ "$(PREFIX)" == "" ]; then \
+		echo "Please specify PREFIX before installing"; \
+		exit 1;\
+	else \
+		cp bin/rott $(PREFIX)/; \
+		echo -e "\nCP bin/rott $(PREFIX)/rott"; \
+	fi
 
 build/rott/%.o: rott/%.c
 	@mkdir -p build/rott 
