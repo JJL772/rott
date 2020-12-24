@@ -36,7 +36,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include <ctype.h>
 #endif
 
-#if (defined _MSC_VER)
+#if (defined _MSC_VER) || defined(PLATFORM_WIN32)
 /* __int64 is built in. */
 #include <malloc.h>
 #include <fcntl.h>

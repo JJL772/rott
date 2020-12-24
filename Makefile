@@ -5,18 +5,22 @@
 CC?=gcc
 
 DEFINES+=-DUSE_SDL 
- 
+
 # Default to UNIX
-ifeq ($(PLATFORM),)
+PLATFORM?=unix
+
+ifeq ($(PLATFORM),unix)
 	DEFINES+=-DPLATFORM_UNIX
-else ifeq ($(PLATFORM),unix)
-	DEFINES+=-DPLATFORM_UNIX
+	CFLAGS+=$(shell pkgconf sdl --cflags) 
+	LIBS+=$(shell pkgconf sdl --libs) -LSDL_mixer
 else
 	DEFINES+=-DPLATFORM_WIN32
+	CFLAGS+=-Wno-int-to-pointer-cast
+	LIBS+=-Llib/win32/ -lSDL -lSDL_mixer 
 endif 
 
-CFLAGS+=$(shell pkgconf sdl --cflags) $(DEFINES) -Werror -Wno-discarded-qualifiers
-LIBS+=$(shell pkgconf sdl --libs) -lSDL_mixer -ldl
+CFLAGS+=$(DEFINES) -Werror -Wno-discarded-qualifiers
+LIBS+=
 
 SRCS = \
 	rott/byteordr.c \
@@ -85,7 +89,7 @@ OBJECTS=$(addprefix build/,$(SRCS:.c=.o))
 
 all: $(OBJECTS)
 	mkdir -p bin
-	gcc -o bin/rott $(OBJECTS) $(LIBS)
+	$(CC) -o bin/rott $(OBJECTS) $(LIBS)
 
 clean:
 	rm -rf build
@@ -95,4 +99,4 @@ clean:
 build/rott/%.o: rott/%.c
 	@mkdir -p build/rott 
 	@mkdir -p build/rott/audiolib
-	gcc -o $@ $(CFLAGS) -c $< 
+	$(CC) -o $@ $(CFLAGS) -c $< 
