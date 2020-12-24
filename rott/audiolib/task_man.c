@@ -28,8 +28,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
    (c) Copyright 1994 James R. Dose.  All Rights Reserved.
 **********************************************************************/
 
-#define TRUE  ( 1 == 1 )
-#define FALSE ( !TRUE )
+#define TRUE  (1 == 1)
+#define FALSE (!TRUE)
 
 //#define USESTACK
 #define LOCKMEMORY
@@ -53,17 +53,16 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #ifdef USE_USRHOOKS
 #include "usrhooks.h"
-#define FreeMem( ptr )   USRHOOKS_FreeMem( ( ptr ) )
+#define FreeMem(ptr) USRHOOKS_FreeMem((ptr))
 #else
-#define FreeMem( ptr )   free( ( ptr ) )
+#define FreeMem(ptr) free((ptr))
 #endif
 
 typedef struct
-   {
-   task *start;
-   task *end;
-   } tasklist;
-
+{
+	task* start;
+	task* end;
+} tasklist;
 
 /*---------------------------------------------------------------------
    Global variables
@@ -82,16 +81,16 @@ static unsigned long  oldStackPointer;
 
 #endif
 
-static task HeadTask;
-static task *TaskList = &HeadTask;
+static task  HeadTask;
+static task* TaskList = &HeadTask;
 
-static void ( __interrupt __far *OldInt8 )( void );
+static void(__interrupt __far* OldInt8)(void);
 
 static volatile long TaskServiceRate  = 0x10000L;
 static volatile long TaskServiceCount = 0;
 
 #ifndef NOINTS
-static volatile int  TS_TimesInInterrupt;
+static volatile int TS_TimesInInterrupt;
 #endif
 
 static char TS_Installed = FALSE;
@@ -102,38 +101,31 @@ volatile int TS_InInterrupt = FALSE;
    Function prototypes
 ---------------------------------------------------------------------*/
 
-static void TS_FreeTaskList( void );
-static void TS_SetClockSpeed( long speed );
-static long TS_SetTimer( long TickBase );
-static void TS_SetTimerToMaxTaskRate( void );
-static void __interrupt __far TS_ServiceSchedule( void );
-static void __interrupt __far TS_ServiceScheduleIntEnabled( void );
-static void TS_AddTask( task *ptr );
-static int  TS_Startup( void );
-static void RestoreRealTimeClock( void );
+static void		      TS_FreeTaskList(void);
+static void		      TS_SetClockSpeed(long speed);
+static long		      TS_SetTimer(long TickBase);
+static void		      TS_SetTimerToMaxTaskRate(void);
+static void __interrupt __far TS_ServiceSchedule(void);
+static void __interrupt __far TS_ServiceScheduleIntEnabled(void);
+static void		      TS_AddTask(task* ptr);
+static int		      TS_Startup(void);
+static void		      RestoreRealTimeClock(void);
 
 // These declarations are necessary to use the inline assembly pragmas.
 
-extern void GetStack(unsigned short *selptr,unsigned long *stackptr);
-extern void SetStack(unsigned short selector,unsigned long stackptr);
+extern void GetStack(unsigned short* selptr, unsigned long* stackptr);
+extern void SetStack(unsigned short selector, unsigned long stackptr);
 
 // This function will get the current stack selector and pointer and save
 // them off.
-#pragma aux GetStack =	\
-	"mov  [edi],esp"		\
-	"mov	ax,ss"	 		\
-	"mov  [esi],ax" 		\
-	parm [esi] [edi]		\
-	modify [eax esi edi];
+#pragma aux GetStack = "mov  [edi],esp"                                                                                                              \
+		       "mov	ax,ss"                                                                                                                   \
+		       "mov  [esi],ax" parm[esi][edi] modify[eax esi edi];
 
 // This function will set the stack selector and pointer to the specified
 // values.
-#pragma aux SetStack =	\
-	"mov  ss,ax"			\
-	"mov  esp,edx"			\
-	parm [ax] [edx]		\
-	modify [eax edx];
-
+#pragma aux						       SetStack = "mov  ss,ax"                                                               \
+		       "mov  esp,edx" parm[ax][edx] modify[eax edx];
 
 /**********************************************************************
 
@@ -141,9 +133,7 @@ extern void SetStack(unsigned short selector,unsigned long stackptr);
 
 **********************************************************************/
 
-
 #define TS_LockStart TS_FreeTaskList
-
 
 /*---------------------------------------------------------------------
    Function: TS_FreeTaskList
@@ -152,32 +142,28 @@ extern void SetStack(unsigned short selector,unsigned long stackptr);
    structures.
 ---------------------------------------------------------------------*/
 
-static void TS_FreeTaskList
-   (
-   void
-   )
+static void TS_FreeTaskList(void)
 
-   {
-   task *node;
-   task *next;
-   unsigned flags;
+{
+	task*	 node;
+	task*	 next;
+	unsigned flags;
 
-   flags = DisableInterrupts();
+	flags = DisableInterrupts();
 
-   node = TaskList->next;
-   while( node != TaskList )
-      {
-      next = node->next;
-      FreeMem( node );
-      node = next;
-      }
+	node = TaskList->next;
+	while (node != TaskList)
+	{
+		next = node->next;
+		FreeMem(node);
+		node = next;
+	}
 
-   TaskList->next = TaskList;
-   TaskList->prev = TaskList;
+	TaskList->next = TaskList;
+	TaskList->prev = TaskList;
 
-   RestoreInterrupts( flags );
-   }
-
+	RestoreInterrupts(flags);
+}
 
 /*---------------------------------------------------------------------
    Function: TS_SetClockSpeed
@@ -185,32 +171,28 @@ static void TS_FreeTaskList
    Sets the rate of the 8253 timer.
 ---------------------------------------------------------------------*/
 
-static void TS_SetClockSpeed
-   (
-   long speed
-   )
+static void TS_SetClockSpeed(long speed)
 
-   {
-   unsigned flags;
+{
+	unsigned flags;
 
-   flags = DisableInterrupts();
+	flags = DisableInterrupts();
 
-   if ( ( speed > 0 ) && ( speed < 0x10000L ) )
-      {
-      TaskServiceRate = speed;
-      }
-   else
-      {
-      TaskServiceRate = 0x10000L;
-      }
+	if ((speed > 0) && (speed < 0x10000L))
+	{
+		TaskServiceRate = speed;
+	}
+	else
+	{
+		TaskServiceRate = 0x10000L;
+	}
 
-   outp( 0x43, 0x36 );
-   outp( 0x40, TaskServiceRate );
-   outp( 0x40, TaskServiceRate >> 8 );
+	outp(0x43, 0x36);
+	outp(0x40, TaskServiceRate);
+	outp(0x40, TaskServiceRate >> 8);
 
-   RestoreInterrupts( flags );
-   }
-
+	RestoreInterrupts(flags);
+}
 
 /*---------------------------------------------------------------------
    Function: TS_SetTimer
@@ -219,23 +201,19 @@ static void TS_SetClockSpeed
    speed if necessary.
 ---------------------------------------------------------------------*/
 
-static long TS_SetTimer
-   (
-   long TickBase
-   )
+static long TS_SetTimer(long TickBase)
 
-   {
-   long speed;
+{
+	long speed;
 
-   speed = 1192030L / TickBase;
-   if ( speed < TaskServiceRate )
-      {
-      TS_SetClockSpeed( speed );
-      }
+	speed = 1192030L / TickBase;
+	if (speed < TaskServiceRate)
+	{
+		TS_SetClockSpeed(speed);
+	}
 
-   return( speed );
-   }
-
+	return (speed);
+}
 
 /*---------------------------------------------------------------------
    Function: TS_SetTimerToMaxTaskRate
@@ -244,39 +222,35 @@ static long TS_SetTimer
    that speed.
 ---------------------------------------------------------------------*/
 
-static void TS_SetTimerToMaxTaskRate
-   (
-   void
-   )
+static void TS_SetTimerToMaxTaskRate(void)
 
-   {
-   task     *ptr;
-   long      MaxServiceRate;
-   unsigned  flags;
+{
+	task*	 ptr;
+	long	 MaxServiceRate;
+	unsigned flags;
 
-   flags = DisableInterrupts();
+	flags = DisableInterrupts();
 
-   MaxServiceRate = 0x10000L;
+	MaxServiceRate = 0x10000L;
 
-   ptr = TaskList->next;
-   while( ptr != TaskList )
-      {
-      if ( ptr->rate < MaxServiceRate )
-         {
-         MaxServiceRate = ptr->rate;
-         }
+	ptr = TaskList->next;
+	while (ptr != TaskList)
+	{
+		if (ptr->rate < MaxServiceRate)
+		{
+			MaxServiceRate = ptr->rate;
+		}
 
-      ptr = ptr->next;
-      }
+		ptr = ptr->next;
+	}
 
-   if ( TaskServiceRate != MaxServiceRate )
-      {
-      TS_SetClockSpeed( MaxServiceRate );
-      }
+	if (TaskServiceRate != MaxServiceRate)
+	{
+		TS_SetClockSpeed(MaxServiceRate);
+	}
 
-   RestoreInterrupts( flags );
-   }
-
+	RestoreInterrupts(flags);
+}
 
 #ifdef NOINTS
 /*---------------------------------------------------------------------
@@ -285,61 +259,57 @@ static void TS_SetTimerToMaxTaskRate
    Interrupt service routine
 ---------------------------------------------------------------------*/
 
-static void __interrupt __far TS_ServiceSchedule
-   (
-   void
-   )
+static void __interrupt __far TS_ServiceSchedule(void)
 
-   {
-   task *ptr;
-   task *next;
+{
+	task* ptr;
+	task* next;
 
+	TS_InInterrupt = TRUE;
 
-   TS_InInterrupt = TRUE;
+#ifdef USESTACK
+	// save stack
+	GetStack(&oldStackSelector, &oldStackPointer);
 
-   #ifdef USESTACK
-   // save stack
-   GetStack( &oldStackSelector, &oldStackPointer );
+	// set our stack
+	SetStack(StackSelector, StackPointer);
+#endif
 
-   // set our stack
-   SetStack( StackSelector, StackPointer );
-   #endif
+	ptr = TaskList->next;
+	while (ptr != TaskList)
+	{
+		next = ptr->next;
 
-   ptr = TaskList->next;
-   while( ptr != TaskList )
-      {
-      next = ptr->next;
+		if (ptr->active)
+		{
+			ptr->count += TaskServiceRate;
+			// JIM
+			//         if ( ptr->count >= ptr->rate )
+			while (ptr->count >= ptr->rate)
+			{
+				ptr->count -= ptr->rate;
+				ptr->TaskService(ptr);
+			}
+		}
+		ptr = next;
+	}
 
-      if ( ptr->active )
-         {
-         ptr->count += TaskServiceRate;
-//JIM
-//         if ( ptr->count >= ptr->rate )
-         while( ptr->count >= ptr->rate )
-            {
-            ptr->count -= ptr->rate;
-            ptr->TaskService( ptr );
-            }
-         }
-      ptr = next;
-      }
+#ifdef USESTACK
+	// restore stack
+	SetStack(oldStackSelector, oldStackPointer);
+#endif
 
-   #ifdef USESTACK
-   // restore stack
-   SetStack( oldStackSelector, oldStackPointer );
-   #endif
+	TaskServiceCount += TaskServiceRate;
+	if (TaskServiceCount > 0xffffL)
+	{
+		TaskServiceCount &= 0xffff;
+		_chain_intr(OldInt8);
+	}
 
-   TaskServiceCount += TaskServiceRate;
-   if ( TaskServiceCount > 0xffffL )
-      {
-      TaskServiceCount &= 0xffff;
-      _chain_intr( OldInt8 );
-      }
+	outp(0x20, 0x20);
 
-   outp( 0x20,0x20 );
-
-   TS_InInterrupt = FALSE;
-   }
+	TS_InInterrupt = FALSE;
+}
 
 #else
 
@@ -349,73 +319,69 @@ static void __interrupt __far TS_ServiceSchedule
    Interrupt service routine with interrupts enabled.
 ---------------------------------------------------------------------*/
 
-static void __interrupt __far TS_ServiceScheduleIntEnabled
-   (
-   void
-   )
+static void __interrupt __far TS_ServiceScheduleIntEnabled(void)
 
-   {
-   task *ptr;
-   task *next;
+{
+	task* ptr;
+	task* next;
 
-   TS_TimesInInterrupt++;
-   TaskServiceCount += TaskServiceRate;
-   if ( TaskServiceCount > 0xffffL )
-      {
-      TaskServiceCount &= 0xffff;
-      _chain_intr( OldInt8 );
-      }
+	TS_TimesInInterrupt++;
+	TaskServiceCount += TaskServiceRate;
+	if (TaskServiceCount > 0xffffL)
+	{
+		TaskServiceCount &= 0xffff;
+		_chain_intr(OldInt8);
+	}
 
-   outp( 0x20,0x20 );
+	outp(0x20, 0x20);
 
-   if ( TS_InInterrupt )
-      {
-      return;
-      }
+	if (TS_InInterrupt)
+	{
+		return;
+	}
 
-   TS_InInterrupt = TRUE;
-   _enable();
+	TS_InInterrupt = TRUE;
+	_enable();
 
-   #ifdef USESTACK
-   // save stack
-   GetStack( &oldStackSelector, &oldStackPointer );
+#ifdef USESTACK
+	// save stack
+	GetStack(&oldStackSelector, &oldStackPointer);
 
-   // set our stack
-   SetStack( StackSelector, StackPointer );
-   #endif
-
-   while( TS_TimesInInterrupt )
-      {
-      ptr = TaskList->next ;
-      while( ptr != TaskList )
-         {
-         next = ptr->next;
-
-         if ( ptr->active )
-            {
-            ptr->count += TaskServiceRate;
-            if ( ptr->count >= ptr->rate )
-               {
-               ptr->count -= ptr->rate;
-               ptr->TaskService( ptr );
-               }
-            }
-         ptr = next;
-         }
-      TS_TimesInInterrupt--;
-      }
-
-   _disable();
-
-   #ifdef USESTACK
-   // restore stack
-   SetStack( oldStackSelector, oldStackPointer );
-   #endif
-
-   TS_InInterrupt = FALSE;
-   }
+	// set our stack
+	SetStack(StackSelector, StackPointer);
 #endif
 
+	while (TS_TimesInInterrupt)
+	{
+		ptr = TaskList->next;
+		while (ptr != TaskList)
+		{
+			next = ptr->next;
+
+			if (ptr->active)
+			{
+				ptr->count += TaskServiceRate;
+				if (ptr->count >= ptr->rate)
+				{
+					ptr->count -= ptr->rate;
+					ptr->TaskService(ptr);
+				}
+			}
+			ptr = next;
+		}
+		TS_TimesInInterrupt--;
+	}
+
+	_disable();
+
+#ifdef USESTACK
+	// restore stack
+	SetStack(oldStackSelector, oldStackPointer);
+#endif
+
+	TS_InInterrupt = FALSE;
+}
+#endif
 
 #ifdef USESTACK
 
@@ -427,37 +393,33 @@ static void __interrupt __far TS_ServiceScheduleIntEnabled
    memory block or 0 if an error occured.
 ---------------------------------------------------------------------*/
 
-static unsigned short allocateTimerStack
-   (
-   unsigned short size
-   )
+static unsigned short allocateTimerStack(unsigned short size)
 
-   {
-   union REGS regs;
+{
+	union REGS regs;
 
-   // clear all registers
-   memset( &regs, 0, sizeof( regs ) );
+	// clear all registers
+	memset(&regs, 0, sizeof(regs));
 
-   // DPMI allocate conventional memory
-   regs.w.ax = 0x100;
+	// DPMI allocate conventional memory
+	regs.w.ax = 0x100;
 
-   // size in paragraphs
-   regs.w.bx = ( size + 15 ) / 16;
+	// size in paragraphs
+	regs.w.bx = (size + 15) / 16;
 
-   int386( 0x31, &regs, &regs );
-   if (!regs.w.cflag)
-      {
-      // DPMI call returns selector in dx
-      // (ax contains real mode segment
-      // which is ignored here)
+	int386(0x31, &regs, &regs);
+	if (!regs.w.cflag)
+	{
+		// DPMI call returns selector in dx
+		// (ax contains real mode segment
+		// which is ignored here)
 
-      return( regs.w.dx );
-      }
+		return (regs.w.dx);
+	}
 
-   // Couldn't allocate memory.
-   return( NULL );
-   }
-
+	// Couldn't allocate memory.
+	return (NULL);
+}
 
 /*---------------------------------------------------------------------
    Function: deallocateTimerStack
@@ -466,24 +428,21 @@ static unsigned short allocateTimerStack
    it.  Assumes the block was allocated with DPMI function 0x100.
 ---------------------------------------------------------------------*/
 
-static void deallocateTimerStack
-   (
-   unsigned short selector
-   )
+static void deallocateTimerStack(unsigned short selector)
 
-   {
+{
 	union REGS regs;
 
-	if ( selector != NULL )
-      {
-      // clear all registers
-      memset( &regs, 0, sizeof( regs ) );
+	if (selector != NULL)
+	{
+		// clear all registers
+		memset(&regs, 0, sizeof(regs));
 
-      regs.w.ax = 0x101;
-      regs.w.dx = selector;
-      int386( 0x31, &regs, &regs );
-      }
-   }
+		regs.w.ax = 0x101;
+		regs.w.dx = selector;
+		int386(0x31, &regs, &regs);
+	}
+}
 
 #endif
 
@@ -493,70 +452,66 @@ static void deallocateTimerStack
    Sets up the task service routine.
 ---------------------------------------------------------------------*/
 
-static int TS_Startup
-   (
-   void
-   )
+static int TS_Startup(void)
 
-   {
-   if ( !TS_Installed )
-      {
+{
+	if (!TS_Installed)
+	{
 #ifdef LOCKMEMORY
 
-      int status;
+		int status;
 
-      status = TS_LockMemory();
-      if ( status != TASK_Ok )
-         {
-         TS_UnlockMemory();
-         return( status );
-         }
+		status = TS_LockMemory();
+		if (status != TASK_Ok)
+		{
+			TS_UnlockMemory();
+			return (status);
+		}
 
 #endif
 
 #ifdef USESTACK
 
-	   StackSelector = allocateTimerStack( kStackSize );
-      if ( StackSelector == NULL )
-         {
+		StackSelector = allocateTimerStack(kStackSize);
+		if (StackSelector == NULL)
+		{
 
 #ifdef LOCKMEMORY
 
-         TS_UnlockMemory();
+			TS_UnlockMemory();
 
 #endif
-         return( TASK_Error );
-         }
+			return (TASK_Error);
+		}
 
-      // Leave a little room at top of stack just for the hell of it...
-      StackPointer = kStackSize - sizeof( long );
+		// Leave a little room at top of stack just for the hell of it...
+		StackPointer = kStackSize - sizeof(long);
 
 #endif
 
-//static const task *TaskList = &HeadTask;
-      TaskList->next = TaskList;
-      TaskList->prev = TaskList;
+		// static const task *TaskList = &HeadTask;
+		TaskList->next = TaskList;
+		TaskList->prev = TaskList;
 
-      TaskServiceRate  = 0x10000L;
-      TaskServiceCount = 0;
+		TaskServiceRate	 = 0x10000L;
+		TaskServiceCount = 0;
 
 #ifndef NOINTS
-      TS_TimesInInterrupt = 0;
+		TS_TimesInInterrupt = 0;
 #endif
 
-      OldInt8 = _dos_getvect( 0x08 );
-      #ifdef NOINTS
-         _dos_setvect( 0x08, TS_ServiceSchedule );
-      #else
-         _dos_setvect( 0x08, TS_ServiceScheduleIntEnabled );
-      #endif
+		OldInt8 = _dos_getvect(0x08);
+#ifdef NOINTS
+		_dos_setvect(0x08, TS_ServiceSchedule);
+#else
+		_dos_setvect(0x08, TS_ServiceScheduleIntEnabled);
+#endif
 
-      TS_Installed = TRUE;
-      }
+		TS_Installed = TRUE;
+	}
 
-   return( TASK_Ok );
-   }
-
+	return (TASK_Ok);
+}
 
 /*---------------------------------------------------------------------
    Function: TS_Shutdown
@@ -564,39 +519,35 @@ static int TS_Startup
    Ends processing of all tasks.
 ---------------------------------------------------------------------*/
 
-void TS_Shutdown
-   (
-   void
-   )
+void TS_Shutdown(void)
 
-   {
-   if ( TS_Installed )
-      {
-      TS_FreeTaskList();
+{
+	if (TS_Installed)
+	{
+		TS_FreeTaskList();
 
-      TS_SetClockSpeed( 0 );
+		TS_SetClockSpeed(0);
 
-      _dos_setvect( 0x08, OldInt8 );
+		_dos_setvect(0x08, OldInt8);
 
 #ifdef USESTACK
 
-      deallocateTimerStack( StackSelector );
-      StackSelector = NULL;
+		deallocateTimerStack(StackSelector);
+		StackSelector = NULL;
 
 #endif
 
-      // Set Date and Time from CMOS
-//      RestoreRealTimeClock();
+		// Set Date and Time from CMOS
+		//      RestoreRealTimeClock();
 
 #ifdef LOCKMEMORY
 
-      TS_UnlockMemory();
+		TS_UnlockMemory();
 
 #endif
-      TS_Installed = FALSE;
-      }
-   }
-
+		TS_Installed = FALSE;
+	}
+}
 
 /*---------------------------------------------------------------------
    Function: TS_ScheduleTask
@@ -604,52 +555,45 @@ void TS_Shutdown
    Schedules a new task for processing.
 ---------------------------------------------------------------------*/
 
-task *TS_ScheduleTask
-   (
-   void  ( *Function )( task * ),
-   int   rate,
-   int   priority,
-   void *data
-   )
+task* TS_ScheduleTask(void (*Function)(task*), int rate, int priority, void* data)
 
-   {
-   task *ptr;
+{
+	task* ptr;
 
 #ifdef USE_USRHOOKS
-   int   status;
+	int status;
 
-   ptr = NULL;
+	ptr = NULL;
 
-   status = USRHOOKS_GetMem( &ptr, sizeof( task ) );
-   if ( status == USRHOOKS_Ok )
+	status = USRHOOKS_GetMem(&ptr, sizeof(task));
+	if (status == USRHOOKS_Ok)
 #else
-   ptr = malloc( sizeof( task ) );
-   if ( ptr != NULL )
+	ptr = malloc(sizeof(task));
+	if (ptr != NULL)
 #endif
-      {
-      if ( !TS_Installed )
-         {
-         status = TS_Startup();
-         if ( status != TASK_Ok )
-            {
-            FreeMem( ptr );
-            return( NULL );
-            }
-         }
+	{
+		if (!TS_Installed)
+		{
+			status = TS_Startup();
+			if (status != TASK_Ok)
+			{
+				FreeMem(ptr);
+				return (NULL);
+			}
+		}
 
-      ptr->TaskService = Function;
-      ptr->data = data;
-      ptr->rate = TS_SetTimer( rate );
-      ptr->count = 0;
-      ptr->priority = priority;
-      ptr->active = FALSE;
+		ptr->TaskService = Function;
+		ptr->data	 = data;
+		ptr->rate	 = TS_SetTimer(rate);
+		ptr->count	 = 0;
+		ptr->priority	 = priority;
+		ptr->active	 = FALSE;
 
-      TS_AddTask( ptr );
-      }
+		TS_AddTask(ptr);
+	}
 
-   return( ptr );
-   }
-
+	return (ptr);
+}
 
 /*---------------------------------------------------------------------
    Function: TS_AddTask
@@ -657,15 +601,7 @@ task *TS_ScheduleTask
    Adds a new task to our list of tasks.
 ---------------------------------------------------------------------*/
 
-static void TS_AddTask
-   (
-   task *node
-   )
-
-   {
-   LL_SortedInsertion( TaskList, node, next, prev, task, priority );
-   }
-
+static void TS_AddTask(task* node) { LL_SortedInsertion(TaskList, node, next, prev, task, priority); }
 
 /*---------------------------------------------------------------------
    Function: TS_Terminate
@@ -673,45 +609,41 @@ static void TS_AddTask
    Ends processing of a specific task.
 ---------------------------------------------------------------------*/
 
-int TS_Terminate
-   (
-   task *NodeToRemove
-   )
+int TS_Terminate(task* NodeToRemove)
 
-   {
-   task *ptr;
-   task *next;
-   unsigned flags;
+{
+	task*	 ptr;
+	task*	 next;
+	unsigned flags;
 
-   flags = DisableInterrupts();
+	flags = DisableInterrupts();
 
-   ptr = TaskList->next;
-   while( ptr != TaskList )
-      {
-      next = ptr->next;
+	ptr = TaskList->next;
+	while (ptr != TaskList)
+	{
+		next = ptr->next;
 
-      if ( ptr == NodeToRemove )
-         {
-         LL_RemoveNode( NodeToRemove, next, prev );
-         NodeToRemove->next = NULL;
-         NodeToRemove->prev = NULL;
-         FreeMem( NodeToRemove );
+		if (ptr == NodeToRemove)
+		{
+			LL_RemoveNode(NodeToRemove, next, prev);
+			NodeToRemove->next = NULL;
+			NodeToRemove->prev = NULL;
+			FreeMem(NodeToRemove);
 
-         TS_SetTimerToMaxTaskRate();
+			TS_SetTimerToMaxTaskRate();
 
-         RestoreInterrupts( flags );
+			RestoreInterrupts(flags);
 
-         return( TASK_Ok );
-         }
+			return (TASK_Ok);
+		}
 
-      ptr = next;
-      }
+		ptr = next;
+	}
 
-   RestoreInterrupts( flags );
+	RestoreInterrupts(flags);
 
-   return( TASK_Warning );
-   }
-
+	return (TASK_Warning);
+}
 
 /*---------------------------------------------------------------------
    Function: TS_Dispatch
@@ -719,27 +651,23 @@ int TS_Terminate
    Begins processing of all inactive tasks.
 ---------------------------------------------------------------------*/
 
-void TS_Dispatch
-   (
-   void
-   )
+void TS_Dispatch(void)
 
-   {
-   task *ptr;
-   unsigned flags;
+{
+	task*	 ptr;
+	unsigned flags;
 
-   flags = DisableInterrupts();
+	flags = DisableInterrupts();
 
-   ptr = TaskList->next;
-   while( ptr != TaskList )
-      {
-      ptr->active = TRUE;
-      ptr = ptr->next;
-      }
+	ptr = TaskList->next;
+	while (ptr != TaskList)
+	{
+		ptr->active = TRUE;
+		ptr	    = ptr->next;
+	}
 
-   RestoreInterrupts( flags );
-   }
-
+	RestoreInterrupts(flags);
+}
 
 /*---------------------------------------------------------------------
    Function: TS_SetTaskRate
@@ -747,23 +675,18 @@ void TS_Dispatch
    Sets the rate at which the specified task is serviced.
 ---------------------------------------------------------------------*/
 
-void TS_SetTaskRate
-   (
-   task *Task,
-   int rate
-   )
+void TS_SetTaskRate(task* Task, int rate)
 
-   {
-   unsigned flags;
+{
+	unsigned flags;
 
-   flags = DisableInterrupts();
+	flags = DisableInterrupts();
 
-   Task->rate = TS_SetTimer( rate );
-   TS_SetTimerToMaxTaskRate();
+	Task->rate = TS_SetTimer(rate);
+	TS_SetTimerToMaxTaskRate();
 
-   RestoreInterrupts( flags );
-   }
-
+	RestoreInterrupts(flags);
+}
 
 #ifdef LOCKMEMORY
 
@@ -773,14 +696,7 @@ void TS_SetTaskRate
    Used for determining the length of the functions to lock in memory.
 ---------------------------------------------------------------------*/
 
-static void TS_LockEnd
-   (
-   void
-   )
-
-   {
-   }
-
+static void TS_LockEnd(void) {}
 
 /*---------------------------------------------------------------------
    Function: TS_UnlockMemory
@@ -788,31 +704,27 @@ static void TS_LockEnd
    Unlocks all neccessary data.
 ---------------------------------------------------------------------*/
 
-void TS_UnlockMemory
-   (
-   void
-   )
+void TS_UnlockMemory(void)
 
-   {
-   DPMI_UnlockMemoryRegion( TS_LockStart, TS_LockEnd );
-   DPMI_Unlock( TaskList );
-   DPMI_Unlock( OldInt8 );
-   DPMI_Unlock( TaskServiceRate );
-   DPMI_Unlock( TaskServiceCount );
-   DPMI_Unlock( TS_Installed );
+{
+	DPMI_UnlockMemoryRegion(TS_LockStart, TS_LockEnd);
+	DPMI_Unlock(TaskList);
+	DPMI_Unlock(OldInt8);
+	DPMI_Unlock(TaskServiceRate);
+	DPMI_Unlock(TaskServiceCount);
+	DPMI_Unlock(TS_Installed);
 
 #ifndef NOINTS
-   DPMI_Unlock( TS_TimesInInterrupt );
+	DPMI_Unlock(TS_TimesInInterrupt);
 #endif
 
 #ifdef USESTACK
-   DPMI_Unlock( StackSelector );
-   DPMI_Unlock( StackPointer );
-   DPMI_Unlock( oldStackSelector );
-   DPMI_Unlock( oldStackPointer );
+	DPMI_Unlock(StackSelector);
+	DPMI_Unlock(StackPointer);
+	DPMI_Unlock(oldStackSelector);
+	DPMI_Unlock(oldStackPointer);
 #endif
-   }
-
+}
 
 /*---------------------------------------------------------------------
    Function: TS_LockMemory
@@ -820,40 +732,37 @@ void TS_UnlockMemory
    Locks all neccessary data.
 ---------------------------------------------------------------------*/
 
-int TS_LockMemory
-   (
-   void
-   )
+int TS_LockMemory(void)
 
-   {
-   int status;
+{
+	int status;
 
-   status  = DPMI_LockMemoryRegion( TS_LockStart, TS_LockEnd );
-   status |= DPMI_Lock( TaskList );
-   status |= DPMI_Lock( OldInt8 );
-   status |= DPMI_Lock( TaskServiceRate );
-   status |= DPMI_Lock( TaskServiceCount );
-   status |= DPMI_Lock( TS_Installed );
+	status = DPMI_LockMemoryRegion(TS_LockStart, TS_LockEnd);
+	status |= DPMI_Lock(TaskList);
+	status |= DPMI_Lock(OldInt8);
+	status |= DPMI_Lock(TaskServiceRate);
+	status |= DPMI_Lock(TaskServiceCount);
+	status |= DPMI_Lock(TS_Installed);
 
 #ifndef NOINTS
-   status |= DPMI_Lock( TS_TimesInInterrupt );
+	status |= DPMI_Lock(TS_TimesInInterrupt);
 #endif
 
 #ifdef USESTACK
-   status |= DPMI_Lock( StackSelector );
-   status |= DPMI_Lock( StackPointer );
-   status |= DPMI_Lock( oldStackSelector );
-   status |= DPMI_Lock( oldStackPointer );
+	status |= DPMI_Lock(StackSelector);
+	status |= DPMI_Lock(StackPointer);
+	status |= DPMI_Lock(oldStackSelector);
+	status |= DPMI_Lock(oldStackPointer);
 #endif
 
-   if ( status != DPMI_Ok )
-      {
-      TS_UnlockMemory();
-      return( TASK_Error );
-      }
+	if (status != DPMI_Ok)
+	{
+		TS_UnlockMemory();
+		return (TASK_Error);
+	}
 
-   return( TASK_Ok );
-   }
+	return (TASK_Ok);
+}
 
 #endif
 
@@ -902,9 +811,9 @@ static void RestoreRealTimeClock
       {
       int386( 0x1A, &inregs, &inregs );
       if ( inregs.x.cflag == 0 )
-         {
-         read = TRUE;
-         }
+	 {
+	 read = TRUE;
+	 }
       }
 
    if ( read )
@@ -918,29 +827,29 @@ static void RestoreRealTimeClock
       inregs.h.ah = 0x04;
       int386( 0x1A, &inregs, &inregs );
       if ( inregs.x.cflag == 0 )
-         {
-         //and convert BCD to integer format
-         cent = btoi( inregs.h.ch );
-         yr   = btoi( inregs.h.cl );
-         mo   = btoi( inregs.h.dh );
-         day  = btoi( inregs.h.dl );
-         year = cent * 100 + yr;
+	 {
+	 //and convert BCD to integer format
+	 cent = btoi( inregs.h.ch );
+	 yr   = btoi( inregs.h.cl );
+	 mo   = btoi( inregs.h.dh );
+	 day  = btoi( inregs.h.dl );
+	 year = cent * 100 + yr;
 
-         // Set System Time.
-         inregs.h.ch = hr;
-         inregs.h.cl = min;
-         inregs.h.dh = sec;
-         inregs.h.dl = 0;
-         inregs.h.ah = 0x2D;
-         int386( 0x21, &inregs, &inregs );
+	 // Set System Time.
+	 inregs.h.ch = hr;
+	 inregs.h.cl = min;
+	 inregs.h.dh = sec;
+	 inregs.h.dl = 0;
+	 inregs.h.ah = 0x2D;
+	 int386( 0x21, &inregs, &inregs );
 
-         // Set System Date.
-         inregs.w.cx = year;
-         inregs.h.dh = mo;
-         inregs.h.dl = day;
-         inregs.h.ah = 0x2B;
-         int386( 0x21, &inregs, &inregs );
-         }
+	 // Set System Date.
+	 inregs.w.cx = year;
+	 inregs.h.dh = mo;
+	 inregs.h.dl = day;
+	 inregs.h.ah = 0x2B;
+	 int386( 0x21, &inregs, &inregs );
+	 }
       }
    }
 */

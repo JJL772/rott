@@ -32,8 +32,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include <string.h>
 #include "dpmi.h"
 
-#define TRUE  ( 1 == 1 )
-#define FALSE ( !TRUE )
+#define TRUE  (1 == 1)
+#define FALSE (!TRUE)
 
 /*---------------------------------------------------------------------
    Function: DPMI_GetRealModeVector
@@ -41,15 +41,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
    Returns the vector of a real mode interrupt.
 ---------------------------------------------------------------------*/
 
-unsigned long DPMI_GetRealModeVector
-   (
-   int num
-   )
-
-   {
-   return 0;
-   }
-
+unsigned long DPMI_GetRealModeVector(int num) { return 0; }
 
 /*---------------------------------------------------------------------
    Function: DPMI_SetRealModeVector
@@ -57,15 +49,7 @@ unsigned long DPMI_GetRealModeVector
    Sets the vector of a real mode interrupt.
 ---------------------------------------------------------------------*/
 
-void DPMI_SetRealModeVector
-   (
-   int num,
-   unsigned long vector
-   )
-
-   {
-   }
-
+void DPMI_SetRealModeVector(int num, unsigned long vector) {}
 
 /*---------------------------------------------------------------------
    Function: DPMI_CallRealModeFunction
@@ -73,15 +57,7 @@ void DPMI_SetRealModeVector
    Performs a call to a real mode function.
 ---------------------------------------------------------------------*/
 
-int DPMI_CallRealModeFunction
-   (
-   dpmi_regs *callregs
-   )
-
-   {
-   return( DPMI_Ok );
-   }
-
+int DPMI_CallRealModeFunction(dpmi_regs* callregs) { return (DPMI_Ok); }
 
 /*---------------------------------------------------------------------
    Function: DPMI_LockMemory
@@ -90,16 +66,7 @@ int DPMI_CallRealModeFunction
    paging the region out.
 ---------------------------------------------------------------------*/
 
-int DPMI_LockMemory
-   (
-   void *address,
-   unsigned length
-   )
-
-   {
-   return ( DPMI_Ok );
-   }
-
+int DPMI_LockMemory(void* address, unsigned length) { return (DPMI_Ok); }
 
 /*---------------------------------------------------------------------
    Function: DPMI_LockMemoryRegion
@@ -108,20 +75,15 @@ int DPMI_LockMemory
    paging the region out.
 ---------------------------------------------------------------------*/
 
-int DPMI_LockMemoryRegion
-   (
-   void *start,
-   void *end
-   )
+int DPMI_LockMemoryRegion(void* start, void* end)
 
-   {
-   int status;
+{
+	int status;
 
-   status = DPMI_LockMemory( start, ( char * )end - ( char * )start );
+	status = DPMI_LockMemory(start, (char*)end - (char*)start);
 
-   return( status );
-   }
-
+	return (status);
+}
 
 /*---------------------------------------------------------------------
    Function: DPMI_UnlockMemory
@@ -129,16 +91,7 @@ int DPMI_LockMemoryRegion
    Unlocks a region of memory that was previously locked.
 ---------------------------------------------------------------------*/
 
-int DPMI_UnlockMemory
-   (
-   void *address,
-   unsigned length
-   )
-
-   {
-   return ( DPMI_Ok );
-   }
-
+int DPMI_UnlockMemory(void* address, unsigned length) { return (DPMI_Ok); }
 
 /*---------------------------------------------------------------------
    Function: DPMI_UnlockMemoryRegion
@@ -146,34 +99,30 @@ int DPMI_UnlockMemory
    Unlocks a region of memory that was previously locked.
 ---------------------------------------------------------------------*/
 
-int DPMI_UnlockMemoryRegion
-   (
-   void *start,
-   void *end
-   )
+int DPMI_UnlockMemoryRegion(void* start, void* end)
 
-   {
-   int status;
+{
+	int status;
 
-   status = DPMI_UnlockMemory( start, ( char * )end - ( char * )start );
+	status = DPMI_UnlockMemory(start, (char*)end - (char*)start);
 
-   return( status );
-   }
+	return (status);
+}
 
-int DPMI_GetDOSMemory( void **ptr, long *descriptor, unsigned length )
+int DPMI_GetDOSMemory(void** ptr, long* descriptor, unsigned length)
 {
 	/* Lovely... */
-	
-	*ptr = (void *)malloc(length);
-	
-	*descriptor = (long) *ptr;
-	
+
+	*ptr = (void*)malloc(length);
+
+	*descriptor = (long)*ptr;
+
 	return (descriptor == 0) ? DPMI_Error : DPMI_Ok;
 }
 
-int DPMI_FreeDOSMemory( long descriptor )
+int DPMI_FreeDOSMemory(long descriptor)
 {
-	free((void *)descriptor);
-	
+	free((void*)descriptor);
+
 	return (descriptor == 0) ? DPMI_Error : DPMI_Ok;
 }

@@ -26,7 +26,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 //
 //****************************************************************************
 
-
 //****************************************************************************
 //
 // GLOBALS
@@ -47,7 +46,7 @@ extern int     NumVoices;
 extern int     NumChannels;
 extern int     NumBits;
 #ifdef DOS
-extern int     MidiAddress;
+extern int MidiAddress;
 #endif
 extern boolean stereoreversed;
 extern boolean cybermanenabled;
@@ -63,21 +62,21 @@ extern int     fandc;
 extern int     blanktime;
 extern char    CodeName[9];
 #ifdef DOS
-extern char   *ApogeePath;
+extern char* ApogeePath;
 #else
-extern char   ApogeePath[256];
+extern char ApogeePath[256];
 #endif
 
-extern int     DefaultDifficulty;
-extern int     DefaultPlayerCharacter;
-extern int     DefaultPlayerColor;
-extern byte    passwordstring[20];
+extern int  DefaultDifficulty;
+extern int  DefaultPlayerCharacter;
+extern int  DefaultPlayerColor;
+extern byte passwordstring[20];
 
 typedef struct
 {
-   char *path;
-   boolean avail;
-   char *file;
+	char*	path;
+	boolean avail;
+	char*	file;
 } AlternateInformation;
 
 extern AlternateInformation RemoteSounds;
@@ -88,9 +87,10 @@ extern AlternateInformation BattleLevels;
 #define MAXMACROLENGTH 32
 #define MAXMACROS      10
 
-typedef struct {
-   byte avail;
-   char macro[MAXMACROLENGTH+1];
+typedef struct
+{
+	byte avail;
+	char macro[MAXMACROLENGTH + 1];
 } MacroList;
 
 extern MacroList CommbatMacros[MAXMACROS];
@@ -102,19 +102,19 @@ extern MacroList CommbatMacros[MAXMACROS];
 //****************************************************************************
 
 void WriteBattleConfig(void);
-void ReadScores (void);
-void ReadInt (const char * s1, int * val);
-void ReadBoolean (const char * s1, boolean * val);
-void ReadConfig (void);
-void WriteParameter (int file, const char * s1, int val);
-void WriteScores (void);
-void WriteConfig (void);
-void ReadSETUPFiles (void);
-void DeleteSoundFile ( void );
-void CheckVendor (void);
-void ConvertStringToPasswordString ( char * string );
-void ConvertPasswordStringToPassword ( void );
-void ConvertPasswordStringToString ( char * string );
-void ConvertPasswordToPasswordString ( void );
+void ReadScores(void);
+void ReadInt(const char* s1, int* val);
+void ReadBoolean(const char* s1, boolean* val);
+void ReadConfig(void);
+void WriteParameter(int file, const char* s1, int val);
+void WriteScores(void);
+void WriteConfig(void);
+void ReadSETUPFiles(void);
+void DeleteSoundFile(void);
+void CheckVendor(void);
+void ConvertStringToPasswordString(char* string);
+void ConvertPasswordStringToPassword(void);
+void ConvertPasswordStringToString(char* string);
+void ConvertPasswordToPasswordString(void);
 
 #endif

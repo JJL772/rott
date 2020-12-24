@@ -20,7 +20,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #ifndef _profile
 #define _profile
 
-#define PROFILE 0
+#define PROFILE	    0
 #define PROFILETICS 2
 
 #endif

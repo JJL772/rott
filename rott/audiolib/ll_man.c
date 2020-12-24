@@ -37,9 +37,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "dpmi.h"
 #endif
 
-#define OFFSET( structure, offset ) \
-   ( *( ( char ** )&( structure )[ offset ] ) )
-
+#define OFFSET(structure, offset) (*((char**)&(structure)[offset]))
 
 /**********************************************************************
 
@@ -47,67 +45,50 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 **********************************************************************/
 
-
 #define LL_LockStart LL_AddNode
 
+void LL_AddNode(char* item, char** head, char** tail, int next, int prev)
 
-void LL_AddNode
-   (
-   char *item,
-   char **head,
-   char **tail,
-   int next,
-   int prev
-   )
+{
+	OFFSET(item, prev) = NULL;
+	OFFSET(item, next) = *head;
 
-   {
-   OFFSET( item, prev ) = NULL;
-   OFFSET( item, next ) = *head;
+	if (*head)
+	{
+		OFFSET(*head, prev) = item;
+	}
+	else
+	{
+		*tail = item;
+	}
 
-   if ( *head )
-      {
-      OFFSET( *head, prev ) = item;
-      }
-   else
-      {
-      *tail = item;
-      }
+	*head = item;
+}
 
-   *head = item;
-   }
+void LL_RemoveNode(char* item, char** head, char** tail, int next, int prev)
 
-void LL_RemoveNode
-   (
-   char *item,
-   char **head,
-   char **tail,
-   int next,
-   int prev
-   )
+{
+	if (OFFSET(item, prev) == NULL)
+	{
+		*head = OFFSET(item, next);
+	}
+	else
+	{
+		OFFSET(OFFSET(item, prev), next) = OFFSET(item, next);
+	}
 
-   {
-   if ( OFFSET( item, prev ) == NULL )
-      {
-      *head = OFFSET( item, next );
-      }
-   else
-      {
-      OFFSET( OFFSET( item, prev ), next ) = OFFSET( item, next );
-      }
+	if (OFFSET(item, next) == NULL)
+	{
+		*tail = OFFSET(item, prev);
+	}
+	else
+	{
+		OFFSET(OFFSET(item, next), prev) = OFFSET(item, prev);
+	}
 
-   if ( OFFSET( item, next ) == NULL )
-      {
-      *tail = OFFSET( item, prev );
-      }
-   else
-      {
-      OFFSET( OFFSET( item, next ), prev ) = OFFSET( item, prev );
-      }
-
-   OFFSET( item, next ) = NULL;
-   OFFSET( item, prev ) = NULL;
-   }
-
+	OFFSET(item, next) = NULL;
+	OFFSET(item, prev) = NULL;
+}
 
 /*---------------------------------------------------------------------
    Function: LL_LockEnd
@@ -115,14 +96,7 @@ void LL_RemoveNode
    Used for determining the length of the functions to lock in memory.
 ---------------------------------------------------------------------*/
 
-static void LL_LockEnd
-   (
-   void
-   )
-
-   {
-   }
-
+static void LL_LockEnd(void) {}
 
 /*---------------------------------------------------------------------
    Function: LL_UnlockMemory
@@ -130,19 +104,15 @@ static void LL_LockEnd
    Unlocks all neccessary data.
 ---------------------------------------------------------------------*/
 
-void LL_UnlockMemory
-   (
-   void
-   )
+void LL_UnlockMemory(void)
 
-   {
+{
 #ifdef LOCKMEMORY
 
-   DPMI_UnlockMemoryRegion( LL_LockStart, LL_LockEnd );
+	DPMI_UnlockMemoryRegion(LL_LockStart, LL_LockEnd);
 
 #endif
-   }
-
+}
 
 /*---------------------------------------------------------------------
    Function: LL_LockMemory
@@ -150,24 +120,21 @@ void LL_UnlockMemory
    Locks all neccessary data.
 ---------------------------------------------------------------------*/
 
-int LL_LockMemory
-   (
-   void
-   )
+int LL_LockMemory(void)
 
-   {
+{
 
 #ifdef LOCKMEMORY
 
-   int status;
+	int status;
 
-   status = DPMI_LockMemoryRegion( LL_LockStart, LL_LockEnd );
-   if ( status != DPMI_Ok )
-      {
-      return( LL_Error );
-      }
+	status = DPMI_LockMemoryRegion(LL_LockStart, LL_LockEnd);
+	if (status != DPMI_Ok)
+	{
+		return (LL_Error);
+	}
 
 #endif
 
-   return( LL_Ok );
-   }
+	return (LL_Ok);
+}

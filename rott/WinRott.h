@@ -2,20 +2,19 @@
 
 // winrott.h
 
+// husk at rette i winrott.c
 
-//husk at rette i winrott.c
-
-extern int iGLOBAL_SCREENWIDTH;//bna val 800
-extern int iGLOBAL_SCREENHEIGHT;//bna val 600
-extern int iGLOBAL_SCREENBWIDE ;
-extern int iG_SCREENWIDTH;// default screen width in bytes
+extern int iGLOBAL_SCREENWIDTH;	 // bna val 800
+extern int iGLOBAL_SCREENHEIGHT; // bna val 600
+extern int iGLOBAL_SCREENBWIDE;
+extern int iG_SCREENWIDTH; // default screen width in bytes
 
 extern int iGLOBAL_HEALTH_X;
 extern int iGLOBAL_HEALTH_Y;
 extern int iGLOBAL_AMMO_X;
 extern int iGLOBAL_AMMO_Y;
 
-extern int iGLOBAL_FOCALWIDTH;
+extern int    iGLOBAL_FOCALWIDTH;
 extern double dGLOBAL_FPFOCALWIDTH;
 
 void EnableScreenStretch(void);
@@ -46,10 +45,3 @@ double dYZANGLELIMIT;
 //#define VIEWWIDTH               MAXSCREENWIDTH//320*2             // size of view window
 //#define VIEWHEIGHT              MAXSCREENHEIGHT//200*2
 //#define MAXSCANLINES            MAXSCREENHEIGHT//200*2             // size of ylookup table
-
-
-
-
-
-
-

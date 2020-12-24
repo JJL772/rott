@@ -17,29 +17,29 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 */
-#ifndef    __ASSERT_H
+#ifndef __ASSERT_H
 
-    #define    __ASSERT_H
+#define __ASSERT_H
 
-    #ifdef NDEBUG
+#ifdef NDEBUG
 
-        #define ASSERT(f)
-
-    #else
-
-        #pragma aux _Assert aborts;          /* _Assert will not return */
-        extern void _Assert( char *strFile, unsigned  uLine ); /*prototype */
-
-        #define ASSERT(f)          \
-            if (f)                 \
-                ;                  \
-            else                   \
-                _Assert( __FILE__, __LINE__ )
-
-    #endif
+#define ASSERT(f)
 
 #else
 
-    #error Multiple definition of ASSERT()
+#pragma aux _Assert aborts; /* _Assert will not return */
+extern void _Assert(char* strFile, unsigned uLine); /*prototype */
+
+#define ASSERT(f)                                                                                                                                    \
+	if (f)                                                                                                                                       \
+		;                                                                                                                                    \
+	else                                                                                                                                         \
+		_Assert(__FILE__, __LINE__)
+
+#endif
+
+#else
+
+#error Multiple definition of ASSERT()
 
 #endif

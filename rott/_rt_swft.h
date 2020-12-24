@@ -27,29 +27,27 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 //
 //****************************************************************************
 
-
-
 //****************************************************************************
 //
 // DEFINES
 //
 //****************************************************************************
 
-#define DPMI_INT     0x31
-#define MOUSE_INT    0x33
-#define DOSMEMSIZE   64                // enough for any SWIFT structure
+#define DPMI_INT   0x31
+#define MOUSE_INT  0x33
+#define DOSMEMSIZE 64 // enough for any SWIFT structure
 
 //
-// device type codes, returned in deviceType field (SWIFT_StaticData)		
+// device type codes, returned in deviceType field (SWIFT_StaticData)
 //
-#define SWIFT_DEV_NONE		0
-#define SWIFT_DEV_CYBERMAN	1
+#define SWIFT_DEV_NONE	   0
+#define SWIFT_DEV_CYBERMAN 1
 
 //
 // Dynamic device data
 //
-#define SDD_EXTERNAL_POWER_CONNECTED	1
-#define SDD_EXTERNAL_POWER_TOO_HIGH	   2
+#define SDD_EXTERNAL_POWER_CONNECTED 1
+#define SDD_EXTERNAL_POWER_TOO_HIGH  2
 
 #define AX(r) ((r).x.eax)
 #define BX(r) ((r).x.ebx)
@@ -58,40 +56,38 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define SI(r) ((r).x.esi)
 #define DI(r) ((r).x.edi)
 
-
 //****************************************************************************
 //
 // TYPEDEFS
 //
 //****************************************************************************
 
-                                          // Active flag:
-static int fActive;                       //  TRUE after successful init
-                                          //  and before termination
-static int nAttached = SWIFT_DEV_NONE;    // type of SWIFT device
+// Active flag:
+static int fActive;		       //  TRUE after successful init
+				       //  and before termination
+static int nAttached = SWIFT_DEV_NONE; // type of SWIFT device
 
-union REGS regs;
+union REGS   regs;
 struct SREGS sregs;
 
-short selector;                           // selector of DOS memory block
-short segment;                            // segment of DOS memory block
-void far *pdosmem;                        // pointer to DOS memory block
+short selector;	   // selector of DOS memory block
+short segment;	   // segment of DOS memory block
+void far* pdosmem; // pointer to DOS memory block
 
 // DPMI real mode interrupt structure
 static struct rminfo
 {
-    long di;
-    long si;
-    long bp;
-    long reserved_by_system;
-    long bx;
-    long dx;
-    long cx;
-    long ax;
-    short flags;
-    short es, ds, fs, gs, ip, cs, sp, ss;
+	long  di;
+	long  si;
+	long  bp;
+	long  reserved_by_system;
+	long  bx;
+	long  dx;
+	long  cx;
+	long  ax;
+	short flags;
+	short es, ds, fs, gs, ip, cs, sp, ss;
 } RMI;
-
 
 //****************************************************************************
 //
@@ -99,11 +95,10 @@ static struct rminfo
 //
 //****************************************************************************
 
-void MouseInt (struct rminfo *prmi);
-static void far *allocDOS (unsigned nbytes, short *pseg, short *psel);
-static void freeDOS (short sel);
+void	    MouseInt(struct rminfo* prmi);
+static void far* allocDOS(unsigned nbytes, short* pseg, short* psel);
+static void	 freeDOS(short sel);
 
 #endif
 
 #endif
-

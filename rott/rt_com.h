@@ -26,23 +26,22 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 //
 //***************************************************************************
 
-#define MAXPACKET	512
+#define MAXPACKET 512
 
 #include "rottnet.h"
 
-extern int badpacket;
-extern int consoleplayer;
+extern int  badpacket;
+extern int  consoleplayer;
 extern byte ROTTpacket[MAXCOMBUFFERSIZE];
 
 extern int controlsynctime;
 
-
 //#define consoleplayer (rottcom->consoleplayer)
 
-void InitROTTNET (void);
-boolean ReadPacket (void);
-void WritePacket (void * buffer, int len, int destination);
-void ComSetTime (void);
-int GetTransitTime( int client );
+void	InitROTTNET(void);
+boolean ReadPacket(void);
+void	WritePacket(void* buffer, int len, int destination);
+void	ComSetTime(void);
+int	GetTransitTime(int client);
 
 #endif
