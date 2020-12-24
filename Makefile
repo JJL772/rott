@@ -12,15 +12,13 @@ PLATFORM?=unix
 ifeq ($(PLATFORM),unix)
 	DEFINES+=-DPLATFORM_UNIX
 	CFLAGS+=$(shell pkgconf sdl --cflags) 
-	LIBS+=$(shell pkgconf sdl --libs) -LSDL_mixer
 else
 	DEFINES+=-DPLATFORM_WIN32
 	CFLAGS+=-Wno-int-to-pointer-cast
-	LIBS+=-Llib/win32/ -lSDL -lSDL_mixer 
 endif 
 
+LIBS+=$(shell pkgconf sdl --libs) -LSDL_mixer
 CFLAGS+=$(DEFINES) -Werror -Wno-discarded-qualifiers
-LIBS+=
 
 SRCS = \
 	rott/byteordr.c \
