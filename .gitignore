@@ -5,3 +5,5 @@ build/
 *.o
 *.obj
 game/
+compile_commands.json
+.vscode
