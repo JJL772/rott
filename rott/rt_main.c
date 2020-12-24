@@ -40,7 +40,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #if USE_SDL
 /* Need to redefine main to SDL_main on some platforms... */
-#include "SDL.h"
+#include "SDL2/SDL.h"
 #endif
 
 #include "rt_actor.h"
@@ -1771,7 +1771,7 @@ void QuitGame(void)
 		px = ERRORVERSIONCOL;
 		py = ERRORVERSIONROW;
 #if (BETA == 1)
-		UL_printf("á");
+		UL_printf("ï¿½");
 #else
 		UL_printf(itoa(ROTTMAJORVERSION, &buf[0], 10));
 #endif

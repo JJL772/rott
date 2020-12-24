@@ -4,20 +4,20 @@
 
 CC?=gcc
 
-DEFINES+=-DUSE_SDL 
+DEFINES+=-DUSE_SDL
 
 # Default to UNIX
 PLATFORM?=unix
 
 ifeq ($(PLATFORM),unix)
 	DEFINES+=-DPLATFORM_UNIX
-	CFLAGS+=$(shell pkgconf sdl --cflags) 
 else
 	DEFINES+=-DPLATFORM_WIN32
 	CFLAGS+=-Wno-int-to-pointer-cast
-endif 
+endif
 
-LIBS+=$(shell pkgconf sdl --libs) -lSDL_mixer
+CFLAGS+=$(shell pkgconf sdl2 --cflags) -g -Og
+LIBS+=$(shell pkgconf sdl2 --libs) -lSDL2_mixer
 CFLAGS+=$(DEFINES) -Werror -Wno-discarded-qualifiers
 
 SRCS = \
@@ -103,6 +103,6 @@ install: all
 	fi
 
 build/rott/%.o: rott/%.c
-	@mkdir -p build/rott 
+	@mkdir -p build/rott
 	@mkdir -p build/rott/audiolib
-	$(CC) -o $@ $(CFLAGS) -c $< 
+	$(CC) $(CFLAGS) -o $@ -c $<

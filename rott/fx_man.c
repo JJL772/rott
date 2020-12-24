@@ -20,8 +20,8 @@
 #define cdecl
 #endif
 
-#include "SDL.h"
-#include "SDL_mixer.h"
+#include "SDL2/SDL.h"
+#include "SDL2/SDL_mixer.h"
 #include "rt_def.h"  // ROTT music hack
 #include "rt_cfg.h"  // ROTT music hack
 #include "rt_util.h" // ROTT music hack

@@ -37,7 +37,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include <io.h>
 #elif PLATFORM_UNIX
 #include <unistd.h>
-#include "SDL.h"
+#include "SDL2/SDL.h"
 #endif
 
 #include <sys/types.h>
@@ -124,6 +124,8 @@ font_t*	 newfont1;
 font_t*	 smallfont;
 font_t*	 bigfont;
 font_t*	 tinyfont;
+
+extern SDL_Window* sdl_main_window;
 
 boolean loadedgame = false;
 
@@ -274,7 +276,7 @@ char* colorname[] = {"Gray", "Brown", "Black", "Tan", "Red", "Olive", "Blue", "W
 //
 // MENU ITEMS
 //
-CP_MenuNames MainMenuNames[] = {"NEW GAME",	"COMM-BATÅ GAME", "RESTORE GAME", "SAVE GAME", "OPTIONS", "ORDERING INFO",
+CP_MenuNames MainMenuNames[] = {"NEW GAME",	"COMM-BATÔøΩ GAME", "RESTORE GAME", "SAVE GAME", "OPTIONS", "ORDERING INFO",
 				"VIEW SCORES",	//"END GAME"
 				"BACK TO DEMO", //"BACK TO GAME"
 				"QUIT"};
@@ -946,7 +948,7 @@ void SetUpControlPanel(void)
 	// bna--savedscreen = SafeMalloc (16000);
 	savedscreen = SafeMalloc(16000 * 8);
 
-	// Copy the current save game screen (Ω size) to this buffer
+	// Copy the current save game screen (ÔøΩ size) to this buffer
 
 	if (RefreshPause == false)
 	{
@@ -2902,7 +2904,7 @@ int CP_SaveGame(void)
 				if (SaveGamesAvail[which])
 					DrawMenuBufPropString(PrintX, PrintY, SaveGameNames[which]);
 				else
-					DrawMenuBufPropString(PrintX, PrintY, "     - Å -");
+					DrawMenuBufPropString(PrintX, PrintY, "     - ÔøΩ -");
 
 				//            MN_PlayMenuSnd (SD_ESCPRESSEDSND);
 				continue;
@@ -3620,7 +3622,7 @@ void PrintLSEntry(int w)
 	if (SaveGamesAvail[w])
 		DrawMenuBufPropString(PrintX, PrintY, SaveGameNames[w]);
 	else
-		DrawMenuBufPropString(PrintX, PrintY, "     - Å -");
+		DrawMenuBufPropString(PrintX, PrintY, "     - ÔøΩ -");
 }
 
 //******************************************************************************
@@ -4555,7 +4557,7 @@ void CP_ExtOptionsMenu(void)
 			DrawExtOptionsButtons();
 			break;
 		case 4:
-			if (SDL_WM_ToggleFullScreen(SDL_GetVideoSurface()))
+			if(!SDL_SetWindowFullscreen(sdl_main_window, (sdl_fullscreen) ? SDL_WINDOW_FULLSCREEN : 0))
 			{
 				sdl_fullscreen ^= 1;
 				DrawExtOptionsButtons();

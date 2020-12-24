@@ -41,10 +41,12 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "rt_net.h" // for GamePaused
 #include "myprint.h"
 
+#include <SDL2/SDL.h>
+
 static void StretchMemPicture();
 // GLOBAL VARIABLES
 
-boolean	       StretchScreen = 0; // bná++
+boolean	       StretchScreen = 0; // bnï¿½++
 extern boolean iG_aimCross;
 extern boolean sdl_fullscreen;
 extern int     iG_X_center;
@@ -63,6 +65,7 @@ byte*	displayofs;
 boolean graphicsmode = false;
 char*	bufofsTopLimit;
 char*	bufofsBottomLimit;
+extern SDL_Window* sdl_main_window;
 
 void DrawCenterAim();
 
@@ -392,7 +395,7 @@ void XFlipPage(void)
 
 #else
 
-#include "SDL.h"
+#include "SDL2/SDL.h"
 
 #ifndef STUB_FUNCTION
 
@@ -414,6 +417,7 @@ void XFlipPage(void)
 */
 static SDL_Surface* sdl_surface		  = NULL;
 static SDL_Surface* unstretch_sdl_surface = NULL;
+SDL_Window* sdl_main_window = NULL;
 
 void GraphicsMode(void)
 {
@@ -424,23 +428,27 @@ void GraphicsMode(void)
 		Error("Could not initialize SDL\n");
 	}
 
-#if defined(PLATFORM_WIN32) || defined(PLATFORM_MACOSX)
-	// FIXME: remove this.  --ryan.
-	flags = SDL_FULLSCREEN;
-	SDL_WM_GrabInput(SDL_GRAB_ON);
-#endif
-
-	SDL_WM_SetCaption("Rise of the Triad", "ROTT");
-	SDL_ShowCursor(0);
-	//    sdl_surface = SDL_SetVideoMode (320, 200, 8, flags);
+	// DO NOT EVER USE SDL_WINDOW_FULLSCREEN! IT WILL RESIZE YOUR DESKTOP!
 	if (sdl_fullscreen)
-		flags = SDL_FULLSCREEN;
-	sdl_surface = SDL_SetVideoMode(iGLOBAL_SCREENWIDTH, iGLOBAL_SCREENHEIGHT, 8, flags);
+		flags = SDL_WINDOW_FULLSCREEN_DESKTOP;
+
+	sdl_main_window = SDL_CreateWindow("Rise of the Triad", SDL_WINDOWPOS_CENTERED,
+		SDL_WINDOWPOS_CENTERED, iGLOBAL_SCREENWIDTH, iGLOBAL_SCREENHEIGHT, flags);
+
+	if(!sdl_main_window)
+	{
+		Error("Could not create SDL Window!\n");
+	}
+
+	SDL_ShowCursor(0);
+
+	sdl_surface = SDL_GetWindowSurface(sdl_main_window);
+
 	if (sdl_surface == NULL)
 	{
 		Error("Could not set video mode\n");
 	}
-}
+} /* GraphicsMode */
 
 /*
 ====================
@@ -679,7 +687,6 @@ void VH_UpdateScreen(void)
 	{
 		DrawCenterAim();
 	}
-	SDL_UpdateRect(SDL_GetVideoSurface(), 0, 0, 0, 0);
 }
 
 /*
@@ -714,7 +721,6 @@ void XFlipPage(void)
 	{
 		DrawCenterAim();
 	}
-	SDL_UpdateRect(sdl_surface, 0, 0, 0, 0);
 
 #endif
 }

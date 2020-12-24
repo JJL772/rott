@@ -27,7 +27,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include <io.h>
 #include <direct.h>
 #elif USE_SDL
-#include "SDL.h"
+#include "SDL2/SDL.h"
 #endif
 
 #include <stdarg.h>
@@ -64,6 +64,8 @@ byte* origpal;
 FILE* errout;
 FILE* debugout;
 FILE* mapdebugout;
+
+extern SDL_Window* sdl_main_window;
 
 static boolean SoftErrorStarted = false;
 static boolean DebugStarted	= false;
@@ -335,7 +337,7 @@ void Error(char* error, ...)
 	px = ERRORVERSIONCOL;
 	py = ERRORVERSIONROW;
 #if (BETA == 1)
-	UL_printf("á");
+	UL_printf("ï¿½");
 #else
 	UL_printf(itoa(ROTTMAJORVERSION, &buf[0], 10));
 #endif
@@ -1201,7 +1203,7 @@ void GetaPalette(byte* palette)
 		palette[i] = inp(PEL_DATA) << 2;
 #else
 	int i;
-	SDL_Palette* pal = SDL_GetVideoSurface()->format->palette;
+	SDL_Palette* pal = SDL_GetWindowSurface(sdl_main_window)->format->palette;
 
 	for (i = 0; i < 256; i++)
 	{
@@ -1243,7 +1245,7 @@ void SetaPalette(byte* pal)
 		cmap[i].b = pal[i * 3 + 2];
 	}
 
-	SDL_SetColors(SDL_GetVideoSurface(), cmap, 0, 256);
+	SDL_SetPaletteColors(SDL_GetWindowSurface(sdl_main_window)->format->palette, cmap, 0, 256);
 #endif
 }
 
@@ -1257,7 +1259,7 @@ void GetPalette(char* palette)
 		*(palette + (unsigned char)i) = inp(0x3c9) << 2;
 #else
 	int i;
-	SDL_Palette* pal = SDL_GetVideoSurface()->format->palette;
+	SDL_Palette* pal = SDL_GetWindowSurface(sdl_main_window)->format->palette;
 
 	for (i = 0; i < 256; i++)
 	{
@@ -1352,7 +1354,7 @@ void VL_FillPalette(int red, int green, int blue)
 		cmap[i].b = blue << 2;
 	}
 
-	SDL_SetColors(SDL_GetVideoSurface(), cmap, 0, 256);
+	SDL_SetPaletteColors(SDL_GetWindowSurface(sdl_main_window)->format->palette, cmap, 0, 256);
 #endif
 }
 
@@ -1451,7 +1453,7 @@ void VL_SetPalette(byte* palette)
 		cmap[i].b = gammatable[(gammaindex << 6) + (*palette++)] << 2;
 	}
 
-	SDL_SetColors(SDL_GetVideoSurface(), cmap, 0, 256);
+	SDL_SetPaletteColors(SDL_GetWindowSurface(sdl_main_window)->format->palette, cmap, 0, 256);
 #endif
 }
 
@@ -1479,7 +1481,10 @@ void VL_GetPalette(byte* palette)
 		*palette++ = inp(PEL_DATA);
 #else
 	int i;
-	SDL_Palette* pal = SDL_GetVideoSurface()->format->palette;
+	SDL_Palette* pal = SDL_GetWindowSurface(sdl_main_window)->format->palette;
+
+	if(!pal)
+		return;
 
 	for (i = 0; i < 256; i++)
 	{
@@ -1518,7 +1523,7 @@ void UL_DisplayMemoryError(int memneeded)
 	px = ERRORVERSIONCOL;
 	py = ERRORVERSIONROW;
 #if (BETA == 1)
-	UL_printf("á");
+	UL_printf("ï¿½");
 #else
 	UL_printf(itoa(ROTTMAJORVERSION, &buf[0], 10));
 #endif
